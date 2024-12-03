@@ -13,18 +13,20 @@ import (
 const LIST_SIZE = 1028
 
 type locationIDs struct {
-	left  []int
-	right []int
+	left       []int
+	right      []int
+	rightCount map[int]int
 }
 
 func newLocationId() locationIDs {
 	left := make([]int, 0, LIST_SIZE)
 	right := make([]int, 0, LIST_SIZE)
+	rightCount := make(map[int]int, LIST_SIZE)
 
-	return locationIDs{left, right}
+	return locationIDs{left, right, rightCount}
 }
 
-func (loc *locationIDs) compareSortedSlices() int {
+func (loc *locationIDs) diffSortedSlices() int {
 	leftSorted := make([]int, len(loc.left))
 	copy(leftSorted, loc.left)
 
@@ -42,6 +44,14 @@ func (loc *locationIDs) compareSortedSlices() int {
 	sum := 0
 	for idx := range leftSorted {
 		sum += absDiff(leftSorted[idx], rightSorted[idx])
+	}
+	return sum
+}
+
+func (loc *locationIDs) multiplyLeftOnRightCount() int {
+	sum := 0
+	for _, num := range loc.left {
+		sum += num * loc.rightCount[num]
 	}
 	return sum
 }
@@ -102,6 +112,8 @@ func parseInput(reader *bufio.Reader) locationIDs {
 		locations.addRight(rightNum)
 		locations.addLeft(leftNum)
 
+		locations.rightCount[rightNum]++
+
 		_, err = reader.Peek(1)
 		if err == io.EOF {
 			break
@@ -116,6 +128,15 @@ func HistorianHysteriaPartOne() {
 	reader := readFile(path)
 
 	locations := parseInput(reader)
-	sum := locations.compareSortedSlices()
-	fmt.Printf("The answer is %d\n", sum)
+	sum := locations.diffSortedSlices()
+	fmt.Printf("[1] The answer is %d\n", sum)
+}
+
+func HistorianHysteriaPartTwo() {
+	path := "advent/1historianhysteria/input.txt"
+	reader := readFile(path)
+
+	locations := parseInput(reader)
+	sum := locations.multiplyLeftOnRightCount()
+	fmt.Printf("[2] The answer is %d\n", sum)
 }
