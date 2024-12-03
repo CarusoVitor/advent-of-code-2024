@@ -1,7 +1,9 @@
 package main
 
-import advent "github.com/CarusoVitor/advent-of-code-2024/advent/1historianhysteria"
+import (
+	rednosed "github.com/CarusoVitor/advent-of-code-2024/advent/2rednosed"
+)
 
 func main() {
-	advent.HistorianHysteriaPartTwo()
+	rednosed.RedNosedPartOne()
 }
