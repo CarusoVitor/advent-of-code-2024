@@ -84,7 +84,7 @@ func getLineNums(reader *bufio.Reader) (int, int, error) {
 	if err != nil {
 		return 0, 0, err
 	}
-	numbers := strings.Split(string(line), "   ")
+	numbers := strings.Fields(string(line))
 	if len(numbers) != 2 {
 		return 0, 0, fmt.Errorf("line must have exactly 2 numbers, got %d", len(numbers))
 	}
