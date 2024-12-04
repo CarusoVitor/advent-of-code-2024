@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	rednosed.RedNosedPartOne()
+	rednosed.RedNosedPartTwo()
 }
