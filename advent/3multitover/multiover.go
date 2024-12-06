@@ -33,15 +33,6 @@ type mult struct {
 	index int
 }
 
-type do struct {
-	neg   bool
-	index int
-}
-
-func newDo(neg bool, index int) do {
-	return do{neg, index}
-}
-
 func newMult(left, right, index int) mult {
 	return mult{left, right, index}
 }
@@ -76,40 +67,27 @@ func findMultMatches(text string) ([]mult, error) {
 	return mult, nil
 }
 
-func findDoMatches(text string) ([]do, error) {
-	do := make([]do, 0, 256)
-	indexes := doRegex.FindAllStringSubmatchIndex(text, -1)
+func findRegexIndexes(text string, regex *regexp.Regexp) ([]int, error) {
+	do := make([]int, 0, 256)
+	indexes := regex.FindAllStringSubmatchIndex(text, -1)
 
 	for _, indexSlice := range indexes {
 		index := indexSlice[0]
-		doObj := newDo(false, index)
-		do = append(do, doObj)
+		do = append(do, index)
 	}
 	return do, nil
 }
 
-func findDontMatches(text string) ([]do, error) {
-	dont := make([]do, 0, 256)
-	indexes := dontRegex.FindAllStringSubmatchIndex(text, -1)
-
-	for _, indexSlice := range indexes {
-		index := indexSlice[0]
-		dontObj := newDo(true, index)
-		dont = append(dont, dontObj)
-	}
-	return dont, nil
-}
-
-func parseInput(text string) ([]mult, []do, []do) {
+func parseInput(text string) ([]mult, []int, []int) {
 	mults, err := findMultMatches(text)
 	if err != nil {
 		panic(err)
 	}
-	do, err := findDoMatches(text)
+	do, err := findRegexIndexes(text, doRegex)
 	if err != nil {
 		panic(err)
 	}
-	dont, err := findDontMatches(text)
+	dont, err := findRegexIndexes(text, dontRegex)
 	if err != nil {
 		panic(err)
 	}
@@ -125,11 +103,57 @@ func sumMultsResults(mults []mult) int {
 	return sum
 }
 
+// incrementUntilCloseTo increments the index until [nums[index]] is as close
+// as possible to goal, but less or equal than goal. It assumes nums is an ascending slice
+func incrementUntilCloseTo(nums []int, idx, goal int) int {
+	if idx == len(nums)-1 {
+		return idx
+	}
+	for idx < len(nums) {
+		if nums[idx] > goal {
+			return idx - 1
+		}
+		idx++
+	}
+	return idx - 1
+}
+
+func sumValidMults(mults []mult, doIndexes []int, dontIndexes []int) int {
+	sum := 0
+	doIdx := 0
+	dontIdx := 0
+	for _, mult := range mults {
+		if doIndexes[doIdx] < mult.index {
+			doIdx = incrementUntilCloseTo(doIndexes, doIdx, mult.index)
+		}
+		if dontIndexes[dontIdx] < mult.index {
+			dontIdx = incrementUntilCloseTo(dontIndexes, dontIdx, mult.index)
+		}
+
+		isLastDo := doIndexes[doIdx] > dontIndexes[dontIdx] && doIndexes[doIdx] < mult.index
+		noMultsToLeft := dontIndexes[dontIdx] > mult.index
+
+		if isLastDo || noMultsToLeft {
+			sum += mult.left * mult.right
+		}
+	}
+	return sum
+}
+
 func MultiOverPartOne() {
 	path := "advent/3multitover/input.txt"
 	text := readFile(path)
 
 	mults, _, _ := parseInput(text)
 	result := sumMultsResults(mults)
+	fmt.Printf("The answer is %d\n", result)
+}
+
+func MultiOverPartTwo() {
+	path := "advent/3multitover/input.txt"
+	text := readFile(path)
+
+	mults, doIndexes, dontIndexes := parseInput(text)
+	result := sumValidMults(mults, doIndexes, dontIndexes)
 	fmt.Printf("The answer is %d\n", result)
 }

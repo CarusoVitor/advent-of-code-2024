@@ -22,12 +22,10 @@ func TestFindMultMatches(t *testing.T) {
 	}
 }
 
-func TestFindDoMatches(t *testing.T) {
+func TestFindDoIndexes(t *testing.T) {
 	text := "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
-	expected := []do{
-		newDo(false, 59),
-	}
-	result, err := findDoMatches(text)
+	expected := []int{59}
+	result, err := findRegexIndexes(text, doRegex)
 	if err != nil {
 		t.Error(err)
 	}
@@ -36,16 +34,38 @@ func TestFindDoMatches(t *testing.T) {
 	}
 }
 
-func TestFindDontMatches(t *testing.T) {
+func TestFindDontIndexes(t *testing.T) {
 	text := "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
-	expected := []do{
-		newDo(true, 20),
-	}
-	result, err := findDontMatches(text)
+	expected := []int{20}
+	result, err := findRegexIndexes(text, dontRegex)
 	if err != nil {
 		t.Error(err)
 	}
 	if !reflect.DeepEqual(expected, result) {
 		t.Errorf("result %#v != expected %#v", result, expected)
 	}
+}
+
+func TestSumValidMults(t *testing.T) {
+	text := "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
+	expected := 48
+	mults, do, donts := parseInput(text)
+	result := sumValidMults(mults, do, donts)
+
+	if expected != result {
+		t.Errorf("expected %d != result %d", expected, result)
+	}
+
+}
+
+func TestSumValidMultsManyDoAndDont(t *testing.T) {
+	text := "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?don't()mul(8,5))"
+	expected := 8
+	mults, do, donts := parseInput(text)
+	result := sumValidMults(mults, do, donts)
+
+	if expected != result {
+		t.Errorf("expected %d != result %d", expected, result)
+	}
+
 }
