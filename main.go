@@ -1,9 +1,7 @@
 package main
 
-import (
-	rednosed "github.com/CarusoVitor/advent-of-code-2024/advent/2rednosed"
-)
+import advent "github.com/CarusoVitor/advent-of-code-2024/advent/3multitover"
 
 func main() {
-	rednosed.RedNosedPartTwo()
+	advent.MultiOverPartOne()
 }
