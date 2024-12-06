@@ -1,8 +1,8 @@
 package advent
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strconv"
@@ -12,12 +12,16 @@ var multRegex = regexp.MustCompile(`mul\((?P<left>\d+),(?P<right>\d+)\)`)
 var leftIdx = multRegex.SubexpIndex("left")
 var rightIdx = multRegex.SubexpIndex("right")
 
-func readFile(path string) *bufio.Scanner {
+func readFile(path string) string {
 	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
-	return bufio.NewScanner(file)
+	text, err := io.ReadAll(file)
+	if err != nil {
+		panic(err)
+	}
+	return string(text)
 }
 
 type mult struct {
@@ -31,9 +35,9 @@ func newMult(left, right int) mult {
 	return mult{left, right, value}
 }
 
-func findMultMatches(line string) ([]mult, error) {
+func findMultMatches(text string) ([]mult, error) {
 	mult := make([]mult, 0, 256)
-	matches := multRegex.FindAllStringSubmatch(line, -1)
+	matches := multRegex.FindAllStringSubmatch(text, -1)
 
 	for _, match := range matches {
 		left := match[leftIdx]
@@ -53,21 +57,12 @@ func findMultMatches(line string) ([]mult, error) {
 	return mult, nil
 }
 
-func parseInput(scanner *bufio.Scanner) []mult {
-	ok := scanner.Scan()
-	mult := make([]mult, 0, 256)
-	for ok {
-		line := scanner.Text()
-
-		matches, err := findMultMatches(line)
-		if err != nil {
-			panic(err)
-		}
-
-		mult = append(mult, matches...)
-		ok = scanner.Scan()
+func parseInput(text string) []mult {
+	matches, err := findMultMatches(text)
+	if err != nil {
+		panic(err)
 	}
-	return mult
+	return matches
 }
 
 func sumMultsResults(mults []mult) int {
@@ -80,9 +75,9 @@ func sumMultsResults(mults []mult) int {
 
 func MultiOverPartOne() {
 	path := "advent/3multitover/input.txt"
-	scanner := readFile(path)
+	text := readFile(path)
 
-	mults := parseInput(scanner)
+	mults := parseInput(text)
 	result := sumMultsResults(mults)
 	fmt.Printf("The answer is %d\n", result)
 }
