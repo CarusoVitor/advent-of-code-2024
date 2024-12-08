@@ -1,7 +1,7 @@
 package main
 
-import advent "github.com/CarusoVitor/advent-of-code-2024/advent/3multitover"
+import advent "github.com/CarusoVitor/advent-of-code-2024/advent/4ceressearch"
 
 func main() {
-	advent.MultiOverPartTwo()
+	advent.CeresSearchPartOne()
 }
