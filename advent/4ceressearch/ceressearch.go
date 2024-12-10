@@ -24,16 +24,13 @@ var stepFunctions = []step{
 	downLeft, down, downRight,
 }
 
-type crossWord struct {
-	width      int
-	heigth     int
-	xPositions [][]int
-	chars      [][]byte
-}
+const MAS string = "MAS"
 
-type position struct {
-	line   int
-	column int
+type crossWord struct {
+	width           int
+	heigth          int
+	letterToIndexes map[byte][][]int
+	chars           [][]byte
 }
 
 func (c *crossWord) addLine(line []byte) {
@@ -46,18 +43,22 @@ func (c *crossWord) addLine(line []byte) {
 	copy(newLine, line)
 
 	c.chars = append(c.chars, newLine)
-	c.addXsInLine(line)
+	c.saveLetterPositionsInLine(line, 'X')
+	c.saveLetterPositionsInLine(line, 'A')
 	c.heigth++
 }
 
-func (c *crossWord) addXsInLine(line []byte) {
-	lineXPositions := make([]int, 0, len(line))
+func (c *crossWord) saveLetterPositionsInLine(line []byte, letter byte) {
+	lineLetterPositions := make([]int, 0, len(line))
 	for idx, char := range line {
-		if char == 'X' {
-			lineXPositions = append(lineXPositions, idx)
+		if char == letter {
+			lineLetterPositions = append(lineLetterPositions, idx)
 		}
 	}
-	c.xPositions = append(c.xPositions, lineXPositions)
+	if c.letterToIndexes[letter] == nil {
+		c.letterToIndexes[letter] = make([][]int, 0, 1028)
+	}
+	c.letterToIndexes[letter] = append(c.letterToIndexes[letter], lineLetterPositions)
 }
 
 func (c crossWord) isOutOfWidthBound(column int) bool {
@@ -98,7 +99,7 @@ func (c crossWord) positionXMASCount(line, column int) int {
 
 func (c crossWord) allXMASCount() int {
 	sum := 0
-	for lineIdx, line := range c.xPositions {
+	for lineIdx, line := range c.letterToIndexes['X'] {
 		for _, column := range line {
 			sum += c.positionXMASCount(lineIdx, column)
 		}
@@ -106,10 +107,54 @@ func (c crossWord) allXMASCount() int {
 	return sum
 }
 
+// countMASinXOcurrences count all ocurrences that have the following format:
+//
+//	M.S
+//	.A.
+//	M.S
+func (c crossWord) countMASinXOcurrences() int {
+	sum := 0
+	for lineIdx, line := range c.letterToIndexes['A'] {
+		if lineIdx > 0 && lineIdx < c.heigth-1 {
+			for _, column := range line {
+				if c.isMASinX(lineIdx, column) {
+					sum++
+				}
+			}
+		}
+	}
+	return sum
+}
+
+// isMASinX checks if an (A) index have MAS in all directions, forward or backward
+// which means that it has to appear in 2 out of the possible 4 directions
+func (c crossWord) isMASinX(line, column int) bool {
+	up := line - 1
+	down := line + 1
+	left := column - 1
+	right := column + 1
+
+	sum := 0
+	if c.isWordPresent(downRight, MAS, up, left) {
+		sum++
+	}
+	if c.isWordPresent(downLeft, MAS, up, right) {
+		sum++
+	}
+	if c.isWordPresent(upRight, MAS, down, left) {
+		sum++
+	}
+	if c.isWordPresent(upLeft, MAS, down, right) {
+		sum++
+	}
+
+	return sum == 2
+}
+
 func newCrossWord() crossWord {
-	xPositions := make([][]int, 0, 1028)
 	chars := make([][]byte, 0, 256)
-	return crossWord{xPositions: xPositions, chars: chars}
+	letterToIndexes := make(map[byte][][]int)
+	return crossWord{chars: chars, letterToIndexes: letterToIndexes}
 }
 
 func newCrossWordFromReader(rd *bufio.Reader) crossWord {
@@ -146,4 +191,11 @@ func CeresSearchPartOne() {
 	reader := readFile(path)
 	cross := parseInput(reader)
 	fmt.Printf("The answer is %d\n", cross.allXMASCount())
+}
+
+func CeresSearchPartTwo() {
+	path := "advent/4ceressearch/input.txt"
+	reader := readFile(path)
+	cross := parseInput(reader)
+	fmt.Printf("The answer is %d\n", cross.countMASinXOcurrences())
 }

@@ -15,8 +15,8 @@ func TestParseInputXPositions(t *testing.T) {
 
 	expectedXPositions := [][]int{{4, 5}, {4}}
 
-	if !reflect.DeepEqual(cross.xPositions, expectedXPositions) {
-		t.Errorf("expected %#v != result #%v", expectedXPositions, cross.xPositions)
+	if !reflect.DeepEqual(cross.letterToIndexes['X'], expectedXPositions) {
+		t.Errorf("expected %#v != result #%v", expectedXPositions, cross.letterToIndexes['X'])
 	}
 }
 
@@ -127,9 +127,46 @@ func TestMultipleXmasToRight(t *testing.T) {
 	input := "XMASMSXSSSXMASMXXSAMXSMMSSSMXSXSXSMMSXMAS\n"
 	rd := bufio.NewReader(strings.NewReader(input))
 	cross := newCrossWordFromReader(rd)
-	expected := 3
+	expected := 4
 	result := cross.allXMASCount()
 	if result != expected {
 		t.Errorf("expected %d != result %d", expected, result)
 	}
+}
+
+func TestCountOneMASinXOcurrence(t *testing.T) {
+	input :=
+		"M.S\n" +
+			".A.\n" +
+			"M.S\n"
+	rd := bufio.NewReader(strings.NewReader(input))
+	cross := newCrossWordFromReader(rd)
+	expected := 1
+	result := cross.countMASinXOcurrences()
+	if result != expected {
+		t.Errorf("expected %d != result %d", expected, result)
+	}
+
+}
+
+func TestCountMulipleMASinXOcurrence(t *testing.T) {
+	input :=
+		".M.S......\n" +
+			"..A..MSMS.\n" +
+			".M.S.MAA..\n" +
+			"..A.ASMSM.\n" +
+			".M.S.M....\n" +
+			"..........\n" +
+			"S.S.S.S.S.\n" +
+			".A.A.A.A..\n" +
+			"M.M.M.M.M.\n" +
+			".........."
+	rd := bufio.NewReader(strings.NewReader(input))
+	cross := newCrossWordFromReader(rd)
+	expected := 9
+	result := cross.countMASinXOcurrences()
+	if result != expected {
+		t.Errorf("expected %d != result %d", expected, result)
+	}
+
 }
