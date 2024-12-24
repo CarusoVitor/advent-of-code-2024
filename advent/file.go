@@ -3,6 +3,7 @@ package advent
 import (
 	"bufio"
 	"os"
+	"strings"
 )
 
 func ReadFile(path string) *bufio.Reader {
@@ -11,4 +12,8 @@ func ReadFile(path string) *bufio.Reader {
 		panic(err)
 	}
 	return bufio.NewReader(f)
+}
+
+func NewTestReader(text string) *bufio.Reader {
+	return bufio.NewReader(strings.NewReader(text))
 }

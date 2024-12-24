@@ -1,18 +1,14 @@
 package advent
 
 import (
-	"bufio"
 	"reflect"
-	"strings"
 	"testing"
+
+	"github.com/CarusoVitor/advent-of-code-2024/advent"
 )
 
-func newReader(text string) *bufio.Reader {
-	return bufio.NewReader(strings.NewReader(text))
-}
-
 func TestReadRules(t *testing.T) {
-	rd := newReader("47|5\n" +
+	rd := advent.NewTestReader("47|5\n" +
 		"97|13\n" +
 		"97|61\n" +
 		"97|47\n\n")
@@ -29,7 +25,7 @@ func TestReadRules(t *testing.T) {
 }
 
 func TestReadPages(t *testing.T) {
-	rd := newReader("1,2,3,4\n5,6,7,8,9,10")
+	rd := advent.NewTestReader("1,2,3,4\n5,6,7,8,9,10")
 	expected := [][]int{
 		{1, 2, 3, 4},
 		{5, 6, 7, 8, 9, 10},
@@ -97,7 +93,7 @@ func TestPrintQueuePartOne(t *testing.T) {
 		"75,97,47,61,53\n" +
 		"61,13,29\n" +
 		"97,13,75,29,47"
-	rd := newReader(input)
+	rd := advent.NewTestReader(input)
 
 	expected := 143
 	result := PrintQueuePartOne(rd)
@@ -136,7 +132,7 @@ func TestPrintQueuePartTwo(t *testing.T) {
 		"75,97,47,61,53\n" +
 		"61,13,29\n" +
 		"97,13,75,29,47"
-	rd := newReader(input)
+	rd := advent.NewTestReader(input)
 
 	expected := 123
 	result := PrintQueuePartTwo(rd)
