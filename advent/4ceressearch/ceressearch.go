@@ -107,11 +107,12 @@ func (c crossWord) allXMASCount() int {
 	return sum
 }
 
-// countMASinXOcurrences count all ocurrences that have the following format:
+// countMASinXOcurrences count all ocurrences that two "MAS" crossing an A,
+// e.g:
 //
-//	M.S
-//	.A.
-//	M.S
+//	M.S    S.M
+//	.A. or .A.
+//	M.S    S.M
 func (c crossWord) countMASinXOcurrences() int {
 	sum := 0
 	for lineIdx, line := range c.letterToIndexes['A'] {
