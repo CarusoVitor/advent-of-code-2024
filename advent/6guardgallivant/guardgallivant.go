@@ -11,6 +11,17 @@ type position struct {
 	row    int
 }
 
+type movingObject struct {
+	pos      position
+	pointing direction
+}
+
+func newMovingObject(column, row int, pointing direction) movingObject {
+	pos := newPosition(column, row)
+	return movingObject{pos: pos, pointing: pointing}
+
+}
+
 func newPosition(column, row int) position {
 	return position{column, row}
 }
@@ -27,13 +38,19 @@ const (
 const GUARD_STARTING_DIRECTION = UP
 
 type guard struct {
-	pos      position
-	pointing direction
+	pos         position
+	pointing    direction
+	startingPos position
 }
 
 func (g *guard) setPosition(column, row int) {
 	pos := newPosition(column, row)
 	g.pos = pos
+}
+
+func (g *guard) setStartingPosition(column, row int) {
+	pos := newPosition(column, row)
+	g.startingPos = pos
 }
 
 func (g *guard) turnRight90Degrees() {
@@ -113,6 +130,10 @@ func (g *grid) setGuardPosition(column, row int) {
 	g.guardObj.setPosition(column, row)
 }
 
+func (g *grid) setGuardStartingPosition(column, row int) {
+	g.guardObj.setStartingPosition(column, row)
+}
+
 func (g grid) isGuardInBounds() bool {
 	isRowValid := g.guardObj.row() >= 0 && g.guardObj.row() < g.width
 	isColumnValid := g.guardObj.column() >= 0 && g.guardObj.column() < g.heigth
@@ -121,6 +142,14 @@ func (g grid) isGuardInBounds() bool {
 
 func (g grid) at(column, row int) byte {
 	return g.lines[row][column]
+}
+
+func (g *grid) placeObstacle(column, row int) {
+	g.lines[row][column] = '#'
+}
+
+func (g *grid) removeObstacle(column, row int) {
+	g.lines[row][column] = '.'
 }
 
 func parse(rd *bufio.Reader) grid {
@@ -139,6 +168,7 @@ func parse(rd *bufio.Reader) grid {
 			line = make([]byte, 0, 128)
 		} else {
 			if char == '^' {
+				grid.setGuardStartingPosition(column, row)
 				grid.setGuardPosition(column, row)
 			}
 			line = append(line, char)
@@ -148,9 +178,11 @@ func parse(rd *bufio.Reader) grid {
 	return grid
 }
 
-func countPositionsUntilLeave(area grid) int {
+func countPositionsUntilLeave(area grid) (int, map[position]bool, bool) {
 	count := 0
 	visited := make(map[position]bool)
+	directionsHistory := make(map[movingObject]bool)
+
 	for area.isGuardInBounds() {
 		row := area.guardObj.row()
 		column := area.guardObj.column()
@@ -164,14 +196,43 @@ func countPositionsUntilLeave(area grid) int {
 				visited[pos] = true
 				count++
 			}
+			posWithDirection := newMovingObject(column, row, area.guardObj.pointing)
+			// if we have already visited this position with this direction, we are in a loop
+			if directionsHistory[posWithDirection] {
+				return count, visited, true
+			}
+			directionsHistory[posWithDirection] = true
 		}
 		area.guardObj.step()
 	}
-	return count
+	return count, visited, false
 }
 
 func GuardGallivantPartOne(rd *bufio.Reader) int {
 	grid := parse(rd)
-	count := countPositionsUntilLeave(grid)
+	count, _, _ := countPositionsUntilLeave(grid)
+	return count
+}
+
+func GuardGallivantPartTwo(rd *bufio.Reader) int {
+	grid := parse(rd)
+	_, visited, _ := countPositionsUntilLeave(grid)
+	count := countPlacingsThatMakeLoops(grid, visited)
+	return count
+}
+
+func countPlacingsThatMakeLoops(area grid, visited map[position]bool) int {
+	count := 0
+	for pos := range visited {
+		if pos == area.guardObj.startingPos {
+			continue
+		}
+		area.placeObstacle(pos.column, pos.row)
+		_, _, isLoop := countPositionsUntilLeave(area)
+		if isLoop {
+			count++
+		}
+		area.removeObstacle(pos.column, pos.row)
+	}
 	return count
 }

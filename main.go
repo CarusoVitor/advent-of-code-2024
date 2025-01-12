@@ -10,5 +10,5 @@ import (
 func main() {
 	path := "advent/6guardgallivant/input.txt"
 	rd := advent.ReadFile(path)
-	fmt.Println("The answer is:", guardgallivant.GuardGallivantPartOne(rd))
+	fmt.Println("The answer is:", guardgallivant.GuardGallivantPartTwo(rd))
 }
